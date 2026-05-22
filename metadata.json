@@ -1,0 +1,6 @@
+{
+  "name": "JARVIS X",
+  "description": "Personal autonomous AI agent with a futuristic HUD interface, task automation, and memory hub.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

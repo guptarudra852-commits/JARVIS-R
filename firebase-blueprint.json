@@ -1,0 +1,64 @@
+{
+  "entities": {
+    "Task": {
+      "title": "Task",
+      "description": "An autonomous task or user-defined goal managed by JARVIS.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "in_progress", "completed", "failed"] },
+        "priority": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+        "description": { "type": "string" },
+        "plan": { "type": "array", "items": { "type": "string" } },
+        "currentStep": { "type": "integer" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "status", "userId", "createdAt"]
+    },
+    "Memory": {
+      "title": "Memory",
+      "description": "Long-term context or facts JARVIS has learned about the user or tasks.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "content": { "type": "string" },
+        "category": { "type": "string", "enum": ["preference", "fact", "context", "history"] },
+        "importance": { "type": "number" },
+        "userId": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["content", "userId", "createdAt"]
+    },
+    "SystemLog": {
+      "title": "System Log",
+      "description": "Real-time activity logs for the AI agent.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string", "enum": ["info", "warning", "error", "success", "agent_thought"] },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" }
+      },
+      "required": ["message", "type", "timestamp", "userId"]
+    }
+  },
+  "firestore": {
+    "/tasks/{taskId}": {
+      "schema": "Task",
+      "description": "Autonomous tasks and sub-tasks."
+    },
+    "/memories/{memoryId}": {
+      "schema": "Memory",
+      "description": "User preferences and learned context."
+    },
+    "/logs/{logId}": {
+      "schema": "SystemLog",
+      "description": "Activity and thought stream of the AI."
+    }
+  }
+}

@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net (Rule 1)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Connection telemetric validation gateway
+    match /test/{documentId} {
+      allow read: if true;
+    }
+
+    // Helper functions (Phase 3)
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Task Validation
+    function isValidTask(task) {
+      return task.title is string && task.title.size() > 0 && task.title.size() <= 200 &&
+             task.userId is string && task.userId.size() <= 128 &&
+             (task.status == 'pending' || task.status == 'in_progress' || task.status == 'completed' || task.status == 'failed') &&
+             (task.priority == 'low' || task.priority == 'medium' || task.priority == 'high' || task.priority == 'critical') &&
+             (!task.keys().hasAll(['description']) || task.description is string) &&
+             (!task.keys().hasAll(['plan']) || task.plan is list) &&
+             (!task.keys().hasAll(['currentStep']) || task.currentStep is int);
+    }
+
+    match /tasks/{taskId} {
+      allow get, list, delete: if true;
+      allow create, update: if isValidTask(request.resource.data);
+    }
+
+    // Memory Validation
+    function isValidMemory(mem) {
+      return mem.content is string && mem.content.size() > 0 && mem.content.size() <= 1000 &&
+             mem.userId is string && mem.userId.size() <= 128 &&
+             (mem.category == 'preference' || mem.category == 'fact' || mem.category == 'context' || mem.category == 'history');
+    }
+
+    match /memories/{memoryId} {
+      allow get, list, delete: if true;
+      allow create, update: if isValidMemory(request.resource.data);
+    }
+
+    // SystemLog Validation
+    function isValidLog(logDoc) {
+      return logDoc.message is string && logDoc.message.size() > 0 && logDoc.message.size() <= 1000 &&
+             logDoc.userId is string && logDoc.userId.size() <= 128 &&
+             (logDoc.type == 'info' || logDoc.type == 'warning' || logDoc.type == 'error' || logDoc.type == 'success' || logDoc.type == 'agent_thought');
+    }
+
+    match /logs/{logId} {
+      allow get, list, delete: if true;
+      allow create, update: if isValidLog(request.resource.data);
+    }
+  }
+}
